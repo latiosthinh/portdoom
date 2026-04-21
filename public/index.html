@@ -4,7 +4,16 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Local Port Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
   <style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+    .material-symbols-outlined.filled {
+      font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+
     * {
       margin: 0;
       padding: 0;
@@ -12,7 +21,7 @@
     }
 
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
       background: #0f172a;
       color: #e2e8f0;
       min-height: 100vh;
@@ -27,6 +36,23 @@
       overflow: hidden;
       cursor: move;
       user-select: none;
+      --kin-surface: #131314;
+      --kin-surface-container-lowest: #0e0e0f;
+      --kin-surface-container-low: #1c1b1c;
+      --kin-surface-container: #201f20;
+      --kin-surface-container-high: #2a2a2b;
+      --kin-surface-container-highest: #353436;
+      --kin-primary: #75ff9e;
+      --kin-primary-container: #00e676;
+      --kin-on-primary: #003918;
+      --kin-on-primary-container: #00612e;
+      --kin-on-surface: #e5e2e3;
+      --kin-on-surface-variant: #bacbb9;
+      --kin-secondary: #ffb3ae;
+      --kin-secondary-container: #a00118;
+      --kin-on-secondary-container: #ffa8a3;
+      --kin-outline-variant: #3b4a3d;
+      --kin-surface-bright: #3a393a;
     }
 
     .container {
@@ -37,13 +63,12 @@
 
     body.widget-mode .container {
       max-width: 100%;
-      background: rgba(15, 23, 42, 0.85);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border-radius: 12px;
-      border: 1px solid rgba(51, 65, 85, 0.5);
-      padding: 0.75rem;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+      background: var(--kin-surface-container-low);
+      border-radius: 0.5rem;
+      padding: 0;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+      outline: 1px solid rgba(59, 74, 61, 0.15);
+      overflow: hidden;
     }
 
     header {
@@ -54,9 +79,11 @@
     }
 
     body.widget-mode header {
-      margin-bottom: 0.5rem;
-      padding: 0.25rem 0.5rem;
+      margin-bottom: 0;
+      padding: 1rem 1.25rem;
       cursor: grab;
+      border-bottom: 1px solid rgba(59, 74, 61, 0.1);
+      background: transparent;
     }
 
     body.widget-mode header:active {
@@ -70,9 +97,30 @@
     }
 
     body.widget-mode h1 {
-      font-size: 0.75rem;
-      font-weight: 500;
-      color: #94a3b8;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.625rem;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--kin-primary);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    body.widget-mode h1::before {
+      content: '';
+      display: inline-block;
+      width: 0.5rem;
+      height: 0.5rem;
+      border-radius: 50%;
+      background: var(--kin-primary);
+      animation: pulse-dot 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
     }
 
     .header-actions {
@@ -96,20 +144,42 @@
     body.widget-mode .toggle-btn,
     body.widget-mode .widget-btn,
     body.widget-mode .corner-btn {
+      background: transparent;
+      border: none;
+      color: var(--kin-on-surface-variant);
       padding: 0.25rem 0.5rem;
-      font-size: 0.625rem;
+      font-size: 0.5625rem;
+      font-family: 'Space Grotesk', sans-serif;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
       border-radius: 0.25rem;
+      opacity: 0.6;
     }
 
-    .refresh-btn:hover, .toggle-btn:hover, .widget-btn:hover, .corner-btn:hover {
-      background: rgba(51, 65, 85, 0.8);
-      color: #e2e8f0;
+    body.widget-mode .refresh-btn:hover,
+    body.widget-mode .toggle-btn:hover,
+    body.widget-mode .widget-btn:hover {
+      background: rgba(117, 255, 158, 0.1);
+      color: var(--kin-primary);
+      opacity: 1;
     }
 
-    .toggle-btn.active, .widget-btn.active, .corner-btn.active {
+    .toggle-btn.active, .widget-btn.active {
       background: #3b82f6;
       border-color: #3b82f6;
       color: white;
+    }
+
+    body.widget-mode .widget-btn.active {
+      background: rgba(117, 255, 158, 0.1);
+      color: var(--kin-primary);
+      opacity: 1;
+    }
+
+    body.widget-mode .toggle-btn.active {
+      background: rgba(117, 255, 158, 0.1);
+      color: var(--kin-primary);
+      border-color: rgba(117, 255, 158, 0.3);
     }
 
     .stats {
@@ -156,10 +226,7 @@
     }
 
     body.widget-mode .search-box {
-      padding: 0.375rem 0.625rem;
-      font-size: 0.625rem;
-      margin-bottom: 0.375rem;
-      border-radius: 0.25rem;
+      display: none;
     }
 
     .search-box::placeholder {
@@ -182,6 +249,7 @@
       background: transparent;
       border: none;
       border-radius: 0;
+      padding: 0.25rem;
     }
 
     .port-item {
@@ -193,17 +261,24 @@
       transition: background 0.2s;
     }
 
+    body.widget-mode .port-header {
+      display: none;
+    }
+
     body.widget-mode .port-item {
-      padding: 0.375rem 0.5rem;
-      grid-template-columns: 1fr 1.25fr 1fr auto auto;
-      border-bottom: 1px solid rgba(51, 65, 85, 0.3);
-      border-radius: 4px;
-      margin-bottom: 2px;
-      background: rgba(30, 41, 59, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.75rem 1rem;
+      border-bottom: none;
+      border-radius: 0.5rem;
+      margin-bottom: 0;
+      background: transparent;
+      transition: all 0.2s ease;
     }
 
     body.widget-mode .port-item:hover {
-      background: rgba(37, 51, 73, 0.7);
+      background: var(--kin-surface-container-high);
     }
 
     body.widget-mode .protocol-col {
@@ -222,8 +297,16 @@
       opacity: 0.6;
     }
 
+    body.widget-mode .port-item.system-process {
+      opacity: 0.5;
+    }
+
     .port-item.system-process:hover {
       opacity: 0.8;
+    }
+
+    body.widget-mode .port-item.system-process:hover {
+      opacity: 0.7;
     }
 
     .port-header {
@@ -236,20 +319,11 @@
     }
 
     body.widget-mode .port-header {
-      background: transparent;
-      font-size: 0.5rem;
-      color: #475569;
-      padding: 0.25rem 0.5rem;
-      margin-bottom: 2px;
-      border-radius: 4px;
+      display: none;
     }
 
     .port-header:hover {
       background: #0f172a;
-    }
-
-    body.widget-mode .port-header:hover {
-      background: transparent;
     }
 
     .port-number {
@@ -259,7 +333,7 @@
     }
 
     body.widget-mode .port-number {
-      font-size: 0.625rem;
+      display: none;
     }
 
     .process-name {
@@ -271,7 +345,10 @@
     }
 
     body.widget-mode .process-name {
-      font-size: 0.625rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: var(--kin-on-surface);
     }
 
     .system-badge {
@@ -295,12 +372,16 @@
     }
 
     body.widget-mode .pid {
-      font-size: 0.5rem;
+      display: none;
     }
 
     .protocol {
       font-size: 0.75rem;
       color: #64748b;
+    }
+
+    body.widget-mode .protocol {
+      display: none;
     }
 
     .kill-btn {
@@ -320,9 +401,7 @@
     }
 
     body.widget-mode .kill-btn {
-      padding: 0.1875rem 0.375rem;
-      font-size: 0.5rem;
-      border-radius: 0.1875rem;
+      display: none;
     }
 
     .kill-btn:disabled {
@@ -356,10 +435,99 @@
     }
 
     body.widget-mode .hide-btn {
-      padding: 0.1875rem 0.375rem;
-      font-size: 0.5rem;
-      border-radius: 0.1875rem;
-      margin-right: 0.25rem;
+      display: none;
+    }
+
+    body.widget-mode .port-item .port-info {
+      display: flex;
+      flex-direction: column;
+      gap: 0.125rem;
+    }
+
+    body.widget-mode .port-item .port-label {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.5625rem;
+      letter-spacing: -0.02em;
+      text-transform: uppercase;
+      color: var(--kin-on-surface-variant);
+      opacity: 0.7;
+    }
+
+    body.widget-mode .port-item .action-buttons {
+      display: flex;
+      align-items: center;
+      gap: 0.125rem;
+      opacity: 0.4;
+      transition: opacity 0.2s;
+    }
+
+    body.widget-mode .port-item:hover .action-buttons {
+      opacity: 1;
+    }
+
+    body.widget-mode .port-item .action-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 1.75rem;
+      height: 1.75rem;
+      border: none;
+      border-radius: 0.25rem;
+      cursor: pointer;
+      transition: all 0.15s;
+      background: transparent;
+      color: var(--kin-on-surface-variant);
+    }
+
+    body.widget-mode .port-item .action-btn:hover {
+      background: var(--kin-surface-container-highest);
+    }
+
+    body.widget-mode .port-item .action-btn.kill:hover {
+      background: rgba(160, 1, 24, 0.2);
+      color: var(--kin-secondary);
+    }
+
+    body.widget-mode .port-item .action-btn .material-symbols-outlined {
+      font-size: 18px;
+    }
+
+    body.widget-mode .footer-stats {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1.5rem;
+      padding: 0.75rem 1.25rem;
+      background: rgba(53, 52, 54, 0.3);
+      border-top: 1px solid rgba(59, 74, 61, 0.1);
+    }
+
+    body.widget-mode .footer-stat {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.125rem;
+    }
+
+    body.widget-mode .footer-stat .stat-label {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.4375rem;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: var(--kin-on-surface-variant);
+      opacity: 0.6;
+    }
+
+    body.widget-mode .footer-stat .stat-value {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.625rem;
+      color: var(--kin-primary);
+    }
+
+    body.widget-mode .footer-divider {
+      width: 1px;
+      height: 1.5rem;
+      background: rgba(59, 74, 61, 0.1);
     }
 
     .hidden-count {
@@ -371,7 +539,10 @@
 
     body.widget-mode .hidden-count {
       font-size: 0.5rem;
-      padding: 0.25rem 0.5rem;
+      padding: 0.375rem 1rem;
+      text-align: center;
+      color: var(--kin-on-surface-variant);
+      opacity: 0.5;
     }
 
     .show-hidden-btn {
@@ -383,8 +554,13 @@
       text-decoration: underline;
     }
 
-    .show-hidden-btn:hover {
-      color: #60a5fa;
+    body.widget-mode .show-hidden-btn {
+      background: transparent;
+      border: none;
+      color: var(--kin-primary);
+      cursor: pointer;
+      font-size: 0.5rem;
+      text-decoration: underline;
     }
 
     .empty-state {
@@ -394,7 +570,10 @@
     }
 
     body.widget-mode .empty-state {
-      padding: 1rem;
+      text-align: center;
+      padding: 1.5rem;
+      color: var(--kin-on-surface-variant);
+      opacity: 0.5;
       font-size: 0.625rem;
     }
 
@@ -405,7 +584,10 @@
     }
 
     body.widget-mode .loading {
-      padding: 0.75rem;
+      text-align: center;
+      padding: 1rem;
+      color: var(--kin-on-surface-variant);
+      opacity: 0.5;
       font-size: 0.625rem;
     }
 
@@ -577,41 +759,89 @@
       document.getElementById('totalPorts').textContent = visiblePorts.length;
       document.getElementById('uniqueProcesses').textContent = uniqueProcesses;
 
-      let html = `
-        <div class="port-item port-header">
-          <div>Port</div>
-          <div>Process</div>
-          <div>PID</div>
-          <div class="protocol-col">Protocol</div>
-          <div></div>
-          <div></div>
-        </div>
-      `;
+      if (widgetMode) {
+        let html = '';
 
-      for (const port of visiblePorts) {
-        const systemClass = port.isSystem ? 'system-process' : '';
-        const badge = port.isSystem ? '<span class="system-badge">System</span>' : '';
-        const killClass = port.isSystem ? 'system-kill' : '';
-        const killText = port.isSystem ? 'Force Kill' : 'Kill';
+        for (const port of visiblePorts) {
+          const systemClass = port.isSystem ? 'system-process' : '';
+          const isPidHidden = hiddenPids.includes(port.pid);
 
-        html += `
-          <div class="port-item ${systemClass}">
-            <div class="port-number">:${port.port}</div>
-            <div class="process-name">${port.processName} ${badge}</div>
-            <div class="pid">${port.pid}</div>
-            <div class="protocol protocol-col">${port.protocol}</div>
-            <button class="hide-btn" onclick="hideProcess(${port.pid}, '${port.processName.replace(/'/g, "\\'")}')">Hide</button>
-            <button class="kill-btn ${killClass}" onclick="killPort(${port.pid}, ${port.isSystem})">${killText}</button>
+          html += `
+            <div class="port-item ${systemClass}">
+              <div class="port-info">
+                <span class="process-name">${port.processName}</span>
+                <span class="port-label">Port: ${port.port}</span>
+              </div>
+              <div class="action-buttons">
+                <button class="action-btn" onclick="hideProcess(${port.pid}, '${port.processName.replace(/'/g, "\\'")}')" title="Hide">
+                  <span class="material-symbols-outlined" style="font-size: 18px;">${isPidHidden ? 'visibility_off' : 'visibility'}</span>
+                </button>
+                <button class="action-btn kill" onclick="killPort(${port.pid}, ${port.isSystem})" title="Kill">
+                  <span class="material-symbols-outlined" style="font-size: 18px;">close</span>
+                </button>
+              </div>
+            </div>
+          `;
+        }
+
+        portList.innerHTML = html;
+
+        const footerHtml = `
+          <div class="footer-stats">
+            <div class="footer-stat">
+              <span class="stat-label">Ports</span>
+              <span class="stat-value">${visiblePorts.length}</span>
+            </div>
+            <div class="footer-divider"></div>
+            <div class="footer-stat">
+              <span class="stat-label">Processes</span>
+              <span class="stat-value">${uniqueProcesses}</span>
+            </div>
           </div>
         `;
-      }
 
-      portList.innerHTML = html;
+        if (hiddenPorts.length > 0) {
+          portList.innerHTML += `<div class="hidden-count">${hiddenPorts.length} hidden — <button class="show-hidden-btn" onclick="toggleShowHidden()">Show</button></div>`;
+        }
 
-      if (hiddenPorts.length > 0) {
-        hiddenCountEl.innerHTML = `${hiddenPorts.length} hidden — <button class="show-hidden-btn" onclick="toggleShowHidden()">Show</button>`;
+        portList.innerHTML += footerHtml;
       } else {
-        hiddenCountEl.innerHTML = '';
+        let html = `
+          <div class="port-item port-header">
+            <div>Port</div>
+            <div>Process</div>
+            <div>PID</div>
+            <div class="protocol-col">Protocol</div>
+            <div></div>
+            <div></div>
+          </div>
+        `;
+
+        for (const port of visiblePorts) {
+          const systemClass = port.isSystem ? 'system-process' : '';
+          const badge = port.isSystem ? '<span class="system-badge">System</span>' : '';
+          const killClass = port.isSystem ? 'system-kill' : '';
+          const killText = port.isSystem ? 'Force Kill' : 'Kill';
+
+          html += `
+            <div class="port-item ${systemClass}">
+              <div class="port-number">:${port.port}</div>
+              <div class="process-name">${port.processName} ${badge}</div>
+              <div class="pid">${port.pid}</div>
+              <div class="protocol protocol-col">${port.protocol}</div>
+              <button class="hide-btn" onclick="hideProcess(${port.pid}, '${port.processName.replace(/'/g, "\\'")}')">Hide</button>
+              <button class="kill-btn ${killClass}" onclick="killPort(${port.pid}, ${port.isSystem})">${killText}</button>
+            </div>
+          `;
+        }
+
+        portList.innerHTML = html;
+
+        if (hiddenPorts.length > 0) {
+          hiddenCountEl.innerHTML = `${hiddenPorts.length} hidden — <button class="show-hidden-btn" onclick="toggleShowHidden()">Show</button>`;
+        } else {
+          hiddenCountEl.innerHTML = '';
+        }
       }
     }
 
@@ -658,6 +888,8 @@
         const { ipcRenderer } = require('electron');
         ipcRenderer.send('set-widget-mode', widgetMode);
       } catch (e) {}
+
+      renderPorts(allPorts);
     }
 
     function toggleCornerMenu() {
