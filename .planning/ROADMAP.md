@@ -27,6 +27,12 @@
 
 **Requirements:** PKG-01, PKG-02
 
+**Plans:** 2 plans
+
+Plans:
+- [x] 02-01-PLAN.md — Dynamic port config and error handling
+- [x] 02-02-PLAN.md — CLI entry point and electron-builder config
+
 **Success Criteria:**
 1. `npm start` launches Electron window with dashboard
 2. `local-port-dashboard` CLI command opens the app
