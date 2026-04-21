@@ -1,13 +1,13 @@
 require('dotenv').config();
-const { app, BrowserWindow, Tray, Menu, nativeImage, dialog, ipcMain, screen } = require('electron');
+const { app, BrowserWindow, Tray, Menu, nativeImage, dialog, screen, ipcMain } = require('electron');
 const path = require('path');
-const { spawn } = require('child_process');
+const { spawn, exec } = require('child_process');
+const fs = require('fs');
 
 let tray = null;
 let mainWindow = null;
 let serverProcess = null;
-let isWidgetMode = false;
-let widgetCorner = 'bottom-right';
+let widgetProcess = null;
 const PORT = process.env.PORT || 8765;
 
 const WIDGET_SIZE = { width: 380, height: 280 };
@@ -42,6 +42,54 @@ function getCenterPosition() {
   };
 }
 
+function findBrowser() {
+  const candidates = [
+    process.env.LOCALAPPDATA + '\\Microsoft\\Edge\\Application\\msedge.exe',
+    process.env.PROGRAMFILES + '\\Microsoft\\Edge\\Application\\msedge.exe',
+    process.env['PROGRAMFILES(X86)'] + '\\Microsoft\\Edge\\Application\\msedge.exe',
+    process.env.LOCALAPPDATA + '\\Google\\Chrome\\Application\\chrome.exe',
+    process.env.PROGRAMFILES + '\\Google\\Chrome\\Application\\chrome.exe',
+    process.env['PROGRAMFILES(X86)'] + '\\Google\\Chrome\\Application\\chrome.exe',
+  ];
+
+  for (const p of candidates) {
+    if (p && fs.existsSync(p)) return p;
+  }
+  return 'msedge.exe';
+}
+
+function launchWidget() {
+  if (widgetProcess) {
+    widgetProcess.kill();
+  }
+
+  const browser = findBrowser();
+  const widgetUrl = `http://localhost:${PORT}/widget.html`;
+  const pos = getCornerPosition('bottom-right');
+
+  widgetProcess = spawn(browser, [
+    `--app=${widgetUrl}`,
+    `--window-size=${WIDGET_SIZE.width},${WIDGET_SIZE.height}`,
+    `--window-position=${pos.x},${pos.y}`,
+    '--frame=0',
+  ], {
+    detached: true,
+    stdio: 'ignore',
+    windowsHide: true,
+  });
+
+  widgetProcess.unref();
+}
+
+function closeWidget() {
+  if (widgetProcess) {
+    try {
+      widgetProcess.kill();
+    } catch (e) {}
+    widgetProcess = null;
+  }
+}
+
 function createTray() {
   const iconPath = path.join(__dirname, 'assets', 'icon.png');
   let icon = nativeImage.createFromPath(iconPath);
@@ -57,35 +105,28 @@ function createTray() {
       label: 'Open Dashboard',
       click: () => {
         if (mainWindow) {
-          if (isWidgetMode) {
-            recreateWindow(false);
-          }
           mainWindow.show();
           mainWindow.focus();
         }
       }
     },
     {
-      label: 'Toggle Widget Mode',
+      label: 'Launch Widget',
       click: () => {
-        if (mainWindow) {
-          recreateWindow(!isWidgetMode);
-        }
+        launchWidget();
       }
     },
     {
-      label: 'Widget Corner',
-      submenu: [
-        { label: 'Top Left', click: () => setWidgetCorner('top-left') },
-        { label: 'Top Right', click: () => setWidgetCorner('top-right') },
-        { label: 'Bottom Left', click: () => setWidgetCorner('bottom-left') },
-        { label: 'Bottom Right', click: () => setWidgetCorner('bottom-right') },
-      ]
+      label: 'Close Widget',
+      click: () => {
+        closeWidget();
+      }
     },
     { type: 'separator' },
     {
       label: 'Quit',
       click: () => {
+        closeWidget();
         if (serverProcess) {
           serverProcess.kill();
         }
@@ -110,28 +151,14 @@ function createTray() {
   });
 }
 
-function setWidgetCorner(corner) {
-  widgetCorner = corner;
-  if (isWidgetMode && mainWindow) {
-    const pos = getCornerPosition(corner);
-    mainWindow.setPosition(pos.x, pos.y);
-  }
-}
-
-function createWindow(asWidget = false) {
-  const isWidget = asWidget || isWidgetMode;
-
+function createWindow() {
   mainWindow = new BrowserWindow({
-    width: isWidget ? WIDGET_SIZE.width : DASHBOARD_SIZE.width,
-    height: isWidget ? WIDGET_SIZE.height : DASHBOARD_SIZE.height,
+    width: DASHBOARD_SIZE.width,
+    height: DASHBOARD_SIZE.height,
     show: false,
     alwaysOnTop: true,
-    frame: !isWidget,
-    transparent: isWidget,
-    hasShadow: !isWidget,
-    backgroundColor: isWidget ? '#00000000' : '#0f172a',
-    resizable: !isWidget,
-    skipTaskbar: isWidget,
+    frame: true,
+    backgroundColor: '#0f172a',
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false,
@@ -142,17 +169,9 @@ function createWindow(asWidget = false) {
 
   mainWindow.loadURL(`http://localhost:${PORT}`);
 
-  if (isWidget) {
-    mainWindow.setAlwaysOnTop(true, 'screen-saver');
-    mainWindow.setMinimumSize(WIDGET_SIZE.width, WIDGET_SIZE.height);
-    mainWindow.setMaximumSize(WIDGET_SIZE.width, WIDGET_SIZE.height);
-    const pos = getCornerPosition(widgetCorner);
-    mainWindow.setPosition(pos.x, pos.y);
-  } else {
-    mainWindow.setMinimumSize(600, 400);
-    const pos = getCenterPosition();
-    mainWindow.setPosition(pos.x, pos.y);
-  }
+  mainWindow.setMinimumSize(600, 400);
+  const pos = getCenterPosition();
+  mainWindow.setPosition(pos.x, pos.y);
 
   mainWindow.on('closed', () => {
     mainWindow = null;
@@ -165,70 +184,8 @@ function createWindow(asWidget = false) {
 
   mainWindow.webContents.on('dom-ready', () => {
     mainWindow.show();
-
-    if (isWidget) {
-      mainWindow.webContents.executeJavaScript(`
-        document.body.classList.add('widget-mode');
-        const btn = document.getElementById('widgetToggle');
-        if (btn) btn.classList.add('active');
-      `).catch(() => {});
-    }
-  });
-
-  mainWindow.on('moved', () => {
-    if (isWidgetMode && mainWindow) {
-      const [x, y] = mainWindow.getPosition();
-      const primaryDisplay = screen.getPrimaryDisplay();
-      const { width: screenWidth, height: screenHeight } = primaryDisplay.workAreaSize;
-      const { x: workAreaX, y: workAreaY } = primaryDisplay.workArea;
-
-      const centerX = x + WIDGET_SIZE.width / 2;
-      const centerY = y + WIDGET_SIZE.height / 2;
-      const screenCenterX = workAreaX + screenWidth / 2;
-      const screenCenterY = workAreaY + screenHeight / 2;
-
-      let newCorner;
-      if (centerX < screenCenterX) {
-        newCorner = centerY < screenCenterY ? 'top-left' : 'bottom-left';
-      } else {
-        newCorner = centerY < screenCenterY ? 'top-right' : 'bottom-right';
-      }
-
-      widgetCorner = newCorner;
-      mainWindow.webContents.executeJavaScript(`
-        localStorage.setItem('widgetCorner', '${newCorner}');
-      `).catch(() => {});
-    }
   });
 }
-
-function recreateWindow(asWidget) {
-  if (!mainWindow) return;
-
-  const wasVisible = mainWindow.isVisible();
-  const oldWindow = mainWindow;
-
-  isWidgetMode = asWidget;
-
-  oldWindow.removeAllListeners('closed');
-  oldWindow.close();
-
-  createWindow(asWidget);
-
-  if (wasVisible) {
-    mainWindow.webContents.once('dom-ready', () => {
-      mainWindow.show();
-    });
-  }
-}
-
-ipcMain.on('set-widget-mode', (event, enabled) => {
-  recreateWindow(enabled);
-});
-
-ipcMain.on('set-widget-corner', (event, corner) => {
-  setWidgetCorner(corner);
-});
 
 function startServer() {
   return new Promise((resolve, reject) => {
@@ -297,7 +254,7 @@ function startServer() {
 app.whenReady().then(async () => {
   createTray();
   await startServer();
-  createWindow(false);
+  createWindow();
 });
 
 app.on('window-all-closed', () => {
@@ -307,7 +264,12 @@ app.on('window-all-closed', () => {
 });
 
 app.on('before-quit', () => {
+  closeWidget();
   if (serverProcess) {
     serverProcess.kill();
   }
+});
+
+ipcMain.on('launch-widget', () => {
+  launchWidget();
 });
