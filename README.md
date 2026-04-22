@@ -55,7 +55,7 @@ portdoom
 
 ### Interactive Mode
 ```
-portdoom v1.0.0 (win32) 💀
+PortDoom 💀
 ─────────────────────────────────────────────────────────────────
 
   steam.exe (4 ports)

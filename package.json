@@ -1,6 +1,6 @@
 {
   "name": "portdoom",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Kill ports, not vibes. The fastest way to view and manage local ports.",
   "bin": {
     "portdoom": "bin/cli.js"

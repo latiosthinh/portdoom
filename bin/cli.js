@@ -21,7 +21,6 @@ const COLORS = {
   W: '\x1b[38;5;255m',
   k: '\x1b[38;5;238m',
   bgA: '\x1b[48;5;52;1m',
-  bgDoom: '\x1b[48;5;16m',
 };
 
 function groupByProcess(ports) {
@@ -34,7 +33,7 @@ function groupByProcess(ports) {
   return groups;
 }
 
-function render(ports, sel, showSys, hiddenPids, msg, cmd) {
+function render(ports, sel, showSys, hiddenPids, msg, cmd, showMenu) {
   const vis = ports.filter(p => {
     if (showSys || p.isSystem) return false;
     if (hiddenPids.has(p.pid)) return false;
@@ -47,7 +46,7 @@ function render(ports, sel, showSys, hiddenPids, msg, cmd) {
 
   let out = '\x1b[H\x1b[2J';
 
-  out += `${COLORS.b}${COLORS.c}portdoom${COLORS.r} ${COLORS.d}v1.0.0${COLORS.r} ${COLORS.k}(${platform})${COLORS.r} ${COLORS.R}💀${COLORS.r}\n`;
+  out += `${COLORS.b}${COLORS.c}portdoom${COLORS.r} ${COLORS.k}(${platform})${COLORS.r} ${COLORS.R}💀${COLORS.r}\n`;
   out += `${COLORS.d}${'─'.repeat(W)}${COLORS.r}\n`;
 
   if (vis.length === 0) {
@@ -58,8 +57,6 @@ function render(ports, sel, showSys, hiddenPids, msg, cmd) {
     
     for (const groupName of groupKeys) {
       const group = groups[groupName];
-      
-      // Group header
       const portCount = group.length;
       
       out += `  ${COLORS.b}${COLORS.y}${groupName}${COLORS.r} ${COLORS.d}(${portCount} port${portCount > 1 ? 's' : ''})${COLORS.r}\n`;
@@ -84,7 +81,7 @@ function render(ports, sel, showSys, hiddenPids, msg, cmd) {
   }
 
   out += `${COLORS.d}${'─'.repeat(W)}${COLORS.r}\n`;
-  const stats = `  ${COLORS.R}${vis.length}${COLORS.r} ports  ${COLORS.M}${groupKeys.length}${COLORS.r} apps  ${COLORS.k}${hiddenPids.size}${COLORS.r} banished`;
+  const stats = `  ${COLORS.R}${vis.length}${COLORS.r} ports  ${COLORS.M}${groupKeys.length}${COLORS.r} apps  ${COLORS.k}${hiddenPids.size}${COLORS.r} hidden`;
   out += stats;
 
   if (msg) {
@@ -93,9 +90,23 @@ function render(ports, sel, showSys, hiddenPids, msg, cmd) {
   out += '\n';
 
   const hiddenApps = getHiddenApps();
-  out += `\n  ${COLORS.d}↑↓${COLORS.r} navigate  ${COLORS.d}space${COLORS.r} execute  ${COLORS.d}h${COLORS.r} banish  ${COLORS.d}H${COLORS.r} eternal  ${COLORS.d}s${COLORS.r} daemons  ${COLORS.d}r${COLORS.r} refresh  ${COLORS.d}u${COLORS.r} resurrect  ${COLORS.d}1-9${COLORS.r} quick  ${COLORS.R}q${COLORS.r} quit`;
-  if (hiddenApps.length > 0) {
-    out += `${COLORS.d}  |  ${COLORS.M}${hiddenApps.length} eternally banished${COLORS.r}`;
+  
+  if (showMenu) {
+    out += `\n  ${COLORS.b}${COLORS.y}COMMANDS:${COLORS.r}\n`;
+    out += `    ${COLORS.d}t${COLORS.r} or ${COLORS.d}SPACE${COLORS.r} - Terminate selected process\n`;
+    out += `    ${COLORS.d}h${COLORS.r} - Hide selected port (session only)\n`;
+    out += `    ${COLORS.d}H${COLORS.r} - Hide entire app (PERMANENT - saved to ~/.portdoom/)\n`;
+    out += `    ${COLORS.d}s${COLORS.r} - Toggle system processes\n`;
+    out += `    ${COLORS.d}r${COLORS.r} - Refresh port list\n`;
+    out += `    ${COLORS.d}u${COLORS.r} - Unhide all (clears permanent hides too)\n`;
+    out += `    ${COLORS.d}1-9${COLORS.r} - Quick terminate by ID\n`;
+    out += `    ${COLORS.d}ESC${COLORS.r} - Close this menu\n`;
+    out += `\n  ${COLORS.d}Press command key:${COLORS.r}`;
+  } else {
+    out += `\n  ${COLORS.d}↑↓${COLORS.r} navigate  ${COLORS.d}SPACE${COLORS.r} terminate  ${COLORS.d}h${COLORS.r} hide  ${COLORS.d}H${COLORS.r} hide-app  ${COLORS.d}s${COLORS.r} system  ${COLORS.d}r${COLORS.r} refresh  ${COLORS.d}u${COLORS.r} unhide  ${COLORS.d}?${COLORS.r} help  ${COLORS.d}q${COLORS.r} quit`;
+    if (hiddenApps.length > 0) {
+      out += `${COLORS.d}  |  ${COLORS.M}${hiddenApps.length} hidden apps${COLORS.r}`;
+    }
   }
 
   if (cmd !== '') {
@@ -148,6 +159,7 @@ async function main() {
   let hiddenPids = new Set();
   let msg = '';
   let cmd = '';
+  let showMenu = false;
 
   async function refresh() {
     const rawPorts = getListeningPorts(false);
@@ -163,7 +175,7 @@ async function main() {
     });
     const maxSel = vis.length - 1;
     if (sel > maxSel) sel = Math.max(0, maxSel);
-    render(ports, sel, showSys, hiddenPids, msg, cmd);
+    render(ports, sel, showSys, hiddenPids, msg, cmd, showMenu);
     msg = '';
   }
 
@@ -171,20 +183,124 @@ async function main() {
 
   process.stdin.on('keypress', async (str, key) => {
     if (key.ctrl && key.name === 'c') process.exit(0);
-    if (key.name === 'q') process.exit(0);
+    if (key.name === 'q' && !showMenu) process.exit(0);
+
+    if (key.name === 'escape') {
+      showMenu = false;
+      cmd = '';
+      render(ports, sel, showSys, hiddenPids, msg, cmd, showMenu);
+      return;
+    }
+
+    if (showMenu) {
+      if (key.name === 't' || key.name === 'space') {
+        const vis = ports.filter(p => {
+          if (showSys || p.isSystem) return false;
+          if (hiddenPids.has(p.pid)) return false;
+          if (isAppHidden(p.processName)) return false;
+          return true;
+        });
+        if (vis[sel]) {
+          const t = vis[sel];
+          const res = killProcess(t.pid);
+          if (res.success) {
+            msg = `${COLORS.G}✓ Terminated ${t.processName}${COLORS.r}`;
+          } else {
+            msg = `${COLORS.R}✗ Failed: ${res.error}${COLORS.r}`;
+          }
+        }
+        showMenu = false;
+        await refresh();
+        return;
+      }
+
+      if (key.name === 'h') {
+        const vis = ports.filter(p => {
+          if (showSys || p.isSystem) return false;
+          if (hiddenPids.has(p.pid)) return false;
+          if (isAppHidden(p.processName)) return false;
+          return true;
+        });
+        if (vis[sel]) {
+          hiddenPids.add(vis[sel].pid);
+          msg = `${COLORS.d}Hidden port ${vis[sel].port}${COLORS.r}`;
+        }
+        showMenu = false;
+        await refresh();
+        return;
+      }
+
+    if (key.name === 'H') {
+      const vis = ports.filter(p => {
+        if (showSys || p.isSystem) return false;
+        if (hiddenPids.has(p.pid)) return false;
+        if (isAppHidden(p.processName)) return false;
+        return true;
+      });
+      if (vis[sel]) {
+        const appName = vis[sel].processName;
+        try {
+          hideApp(appName);
+          msg = `${COLORS.y}💀 Eternally banished ${appName}${COLORS.r}`;
+        } catch (e) {
+          msg = `${COLORS.R}Failed to banish: ${e.message}${COLORS.r}`;
+        }
+      }
+      showMenu = false;
+      await refresh();
+      return;
+    }
+
+      if (key.name === 's') {
+        showSys = !showSys;
+        sel = 0;
+        msg = showSys ? `${COLORS.y}Showing system processes${COLORS.r}` : `${COLORS.d}Hiding system processes${COLORS.r}`;
+        showMenu = false;
+        await refresh();
+        return;
+      }
+
+      if (key.name === 'u') {
+        hiddenPids.clear();
+        unhideAllApps();
+        msg = `${COLORS.G}✓ Unhidden all${COLORS.r}`;
+        showMenu = false;
+        await refresh();
+        return;
+      }
+
+      if (key.name === 'r') {
+        clearProcessCache();
+        await refresh();
+        msg = `${COLORS.G}✓ Refreshed${COLORS.r}`;
+        showMenu = false;
+        render(ports, sel, showSys, hiddenPids, msg, cmd, showMenu);
+        return;
+      }
+
+      showMenu = false;
+      render(ports, sel, showSys, hiddenPids, msg, cmd, showMenu);
+      return;
+    }
+
+    if (key.name === '?') {
+      showMenu = true;
+      render(ports, sel, showSys, hiddenPids, msg, cmd, showMenu);
+      return;
+    }
 
     if (key.name === 'r') {
       clearProcessCache();
       await refresh();
-      msg = `${COLORS.G}✓ summoned${COLORS.r}`;
-      render(ports, sel, showSys, hiddenPids, msg, cmd);
+      msg = `${COLORS.G}✓ Refreshed${COLORS.r}`;
+      render(ports, sel, showSys, hiddenPids, msg, cmd, showMenu);
       return;
     }
 
     if (key.name === 's') {
       showSys = !showSys;
       sel = 0;
-      msg = showSys ? `${COLORS.y}showing system${COLORS.r}` : `${COLORS.d}hiding system${COLORS.r}`;
+      msg = showSys ? `${COLORS.y}Showing system processes${COLORS.r}` : `${COLORS.d}Hiding system processes${COLORS.r}`;
       await refresh();
       return;
     }
@@ -192,14 +308,14 @@ async function main() {
     if (key.name === 'u') {
       hiddenPids.clear();
       unhideAllApps();
-      msg = `${COLORS.G}✓ resurrected all${COLORS.r}`;
+      msg = `${COLORS.G}✓ Unhidden all${COLORS.r}`;
       await refresh();
       return;
     }
 
     if (key.name === 'up') {
       sel = Math.max(0, sel - 1);
-      render(ports, sel, showSys, hiddenPids, msg, cmd);
+      render(ports, sel, showSys, hiddenPids, msg, cmd, showMenu);
       return;
     }
 
@@ -211,11 +327,11 @@ async function main() {
         return true;
       });
       sel = Math.min(vis.length - 1, sel + 1);
-      render(ports, sel, showSys, hiddenPids, msg, cmd);
+      render(ports, sel, showSys, hiddenPids, msg, cmd, showMenu);
       return;
     }
 
-    if (key.name === 'space' || (key.name === 'return' && cmd === '')) {
+    if (key.name === 'space') {
       const vis = ports.filter(p => {
         if (showSys || p.isSystem) return false;
         if (hiddenPids.has(p.pid)) return false;
@@ -226,9 +342,9 @@ async function main() {
         const t = vis[sel];
         const res = killProcess(t.pid);
         if (res.success) {
-          msg = `${COLORS.R}💀 executed ${t.processName}${COLORS.r}`;
+          msg = `${COLORS.G}✓ Terminated ${t.processName}${COLORS.r}`;
         } else {
-          msg = `${COLORS.M}✗ failed to execute${COLORS.r}`;
+          msg = `${COLORS.R}✗ Failed: ${res.error}${COLORS.r}`;
         }
         await refresh();
       }
@@ -244,13 +360,13 @@ async function main() {
       });
       if (vis[sel]) {
         hiddenPids.add(vis[sel].pid);
-        msg = `${COLORS.M}☠ banished port ${vis[sel].port}${COLORS.r}`;
+        msg = `${COLORS.d}Hidden ${vis[sel].processName}${COLORS.r}`;
         await refresh();
       }
       return;
     }
 
-    if (key.name === 'H' && key.shift) {
+    if (key.name === 'H') {
       const vis = ports.filter(p => {
         if (showSys || p.isSystem) return false;
         if (hiddenPids.has(p.pid)) return false;
@@ -260,23 +376,7 @@ async function main() {
       if (vis[sel]) {
         const appName = vis[sel].processName;
         hideApp(appName);
-        msg = `${COLORS.R}💀 eternally banished ${appName}${COLORS.r}`;
-        await refresh();
-      }
-      return;
-    }
-
-    if (key.name === 's') {
-      const vis = ports.filter(p => {
-        if (showSys || p.isSystem) return false;
-        if (hiddenPids.has(p.pid)) return false;
-        if (isAppHidden(p.processName)) return false;
-        return true;
-      });
-      if (vis[sel]) {
-        const appName = vis[sel].processName;
-        hideApp(appName);
-        msg = `${COLORS.y}hidden app ${appName}${COLORS.r}`;
+        msg = `${COLORS.y}Hidden app ${appName}${COLORS.r}`;
         await refresh();
       }
       return;
@@ -284,13 +384,7 @@ async function main() {
 
     if (key.name === 'backspace') {
       cmd = cmd.slice(0, -1);
-      render(ports, sel, showSys, hiddenPids, msg, cmd);
-      return;
-    }
-
-    if (key.name === 'escape') {
-      cmd = '';
-      render(ports, sel, showSys, hiddenPids, msg, cmd);
+      render(ports, sel, showSys, hiddenPids, msg, cmd, showMenu);
       return;
     }
 
@@ -305,9 +399,9 @@ async function main() {
       if (vis[id - 1]) {
         const t = vis[id - 1];
         const res = killProcess(t.pid);
-        msg = res.success ? `${COLORS.G}✓ killed ${t.processName}${COLORS.r}` : `${COLORS.R}✗ ${res.error}${COLORS.r}`;
+        msg = res.success ? `${COLORS.G}✓ Terminated ${t.processName}${COLORS.r}` : `${COLORS.R}✗ Failed: ${res.error}${COLORS.r}`;
       } else {
-        msg = `${COLORS.R}✗ invalid id${COLORS.r}`;
+        msg = `${COLORS.R}✗ Invalid ID${COLORS.r}`;
       }
       cmd = '';
       await refresh();
@@ -316,7 +410,7 @@ async function main() {
 
     if (/^\d$/.test(str) && key.name !== 'return') {
       cmd += str;
-      render(ports, sel, showSys, hiddenPids, msg, cmd);
+      render(ports, sel, showSys, hiddenPids, msg, cmd, showMenu);
       return;
     }
   });
@@ -325,6 +419,6 @@ async function main() {
 }
 
 main().catch(err => {
-  console.error('PortMan error:', err.message);
+  console.error('PortDoom error:', err.message);
   process.exit(1);
 });
