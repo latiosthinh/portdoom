@@ -1,9 +1,9 @@
 {
-  "name": "portman",
+  "name": "portdoom",
   "version": "1.0.0",
   "description": "Kill ports, not vibes. The fastest way to view and manage local ports.",
   "bin": {
-    "portman": "bin/cli.js"
+    "portdoom": "bin/cli.js"
   },
   "scripts": {
     "test": "node --test"
@@ -22,13 +22,12 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/latiosthinh/portman.git"
+    "url": "git+https://github.com/latiosthinh/portdoom.git"
   },
   "bugs": {
-    "url": "https://github.com/latiosthinh/portman/issues"
+    "url": "https://github.com/latiosthinh/portdoom/issues"
   },
-  "homepage": "https://github.com/latiosthinh/portman#readme",
-  "dependencies": {},
+  "homepage": "https://github.com/latiosthinh/portdoom#readme",
   "engines": {
     "node": ">=14.0.0"
   },

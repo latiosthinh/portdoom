@@ -1,12 +1,12 @@
-# PortMan 💪
+# PortDoom 💀
 
-> **Kill ports, not vibes.** The fastest way to view and manage local ports.
+> **Kill ports, not vibes.** Doom your ports to oblivion.
 
-[![npm](https://img.shields.io/npm/v/portman.svg)](https://www.npmjs.com/package/portman)
-[![npm](https://img.shields.io/npm/dt/portman.svg)](https://www.npmjs.com/package/portman)
-[![platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-blue)](https://www.npmjs.com/package/portman)
-[![license](https://img.shields.io/npm/l/portman.svg)](https://www.npmjs.com/package/portman)
-[![size](https://img.shields.io/bundlephobia/min/portman)](https://www.npmjs.com/package/portman)
+[![npm](https://img.shields.io/npm/v/portdoom.svg)](https://www.npmjs.com/package/portdoom)
+[![npm](https://img.shields.io/npm/dt/portdoom.svg)](https://www.npmjs.com/package/portdoom)
+[![platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-blue)](https://www.npmjs.com/package/portdoom)
+[![license](https://img.shields.io/npm/l/portdoom.svg)](https://www.npmjs.com/package/portdoom)
+[![size](https://img.shields.io/bundlephobia/min/portdoom)](https://www.npmjs.com/package/portdoom)
 
 ---
 
@@ -14,11 +14,11 @@
 
 ```bash
 # No install needed - run instantly
-npx portman
+npx portdoom
 
 # Or install globally
-npm install -g portman
-portman
+npm install -g portdoom
+portdoom
 ```
 
 ---
@@ -29,7 +29,7 @@ portman
 - 🎯 **Smart grouping** - Ports organized by application
 - 🧠 **Persistent hiding** - Hide apps forever, saved locally
 - 🖥️ **Cross-platform** - Windows, macOS, Linux
-- 🎨 **Beautiful TUI** - Clean, modern terminal interface
+- 🎨 **Beautiful TUI** - Dark, doom-themed terminal interface
 - 📦 **Zero dependencies** - Pure Node.js, ~50KB total
 - 🔒 **Privacy-first** - All data stays on your machine
 
@@ -55,7 +55,7 @@ portman
 
 ### Interactive Mode
 ```
-portman v1.0.0 (win32)
+portdoom v1.0.0 (win32) 💀
 ─────────────────────────────────────────────────────────────────
 
   steam.exe (4 ports)
@@ -75,7 +75,7 @@ portman v1.0.0 (win32)
 
 ### Non-Interactive (Piped Output)
 ```bash
-$ portman > ports.txt
+$ portdoom > ports.txt
 ```
 
 ```
@@ -95,7 +95,7 @@ ID   APP                                    PORTS
 ### Development
 ```bash
 # Find what's using port 3000
-portman | grep 3000
+portdoom | grep 3000
 
 # Kill it fast (navigate + space, or type "3" + Enter)
 ```
@@ -103,25 +103,25 @@ portman | grep 3000
 ### Clean Up
 ```bash
 # Hide apps you don't care about (press H)
-# They'll stay hidden forever in ~/.portman/config.json
+# They'll stay hidden forever in ~/.portdoom/config.json
 ```
 
 ### Scripting
 ```bash
 # Get all ports as text
-portman > report.txt
+portdoom > report.txt
 
 # Check if a port is in use
-portman | grep -q 3000 && echo "Port 3000 is busy"
+portdoom | grep -q 3000 && echo "Port 3000 is busy"
 ```
 
 ---
 
 ## 🔧 Configuration
 
-PortMan stores hidden apps in:
-- **Windows:** `C:\Users\You\.portman\config.json`
-- **macOS/Linux:** `~/.portman/config.json`
+PortDoom stores hidden apps in:
+- **Windows:** `C:\Users\You\.portdoom\config.json`
+- **macOS/Linux:** `~/.portdoom/config.json`
 
 ```json
 {
@@ -137,15 +137,15 @@ Edit this file manually or use `H` in the app to hide, `u` to unhide all.
 
 ```bash
 # Clone and install (zero dependencies!)
-git clone https://github.com/portman/portman.git
-cd portman
+git clone https://github.com/latiosthinh/portdoom.git
+cd portdoom
 
 # Run directly
 node bin/cli.js
 
 # Link globally for testing
 npm link
-portman
+portdoom
 
 # Test non-interactive mode
 node bin/cli.js > output.txt
@@ -155,7 +155,7 @@ node bin/cli.js > output.txt
 
 ## 🏗️ How It Works
 
-PortMan uses native OS commands - **no dependencies required**:
+PortDoom uses native OS commands - **no dependencies required**:
 
 | Platform | Port Detection | Process Kill |
 |----------|---------------|--------------|
@@ -180,20 +180,20 @@ Process names are cached for 5 seconds for instant refresh.
 
 ## 🙋 FAQ
 
-**Q: Why isn't `npx portman` showing the latest features?**  
+**Q: Why isn't `npx portdoom` showing the latest features?**  
 A: Make sure you're using the latest version from npm. For development, use `npm link`.
 
 **Q: Where are hidden apps stored?**  
-A: `~/.portman/config.json` - edit this file to manage hidden apps.
+A: `~/.portdoom/config.json` - edit this file to manage hidden apps.
 
 **Q: Can I hide system processes?**  
 A: System processes are hidden by default. Press `s` to show them.
 
 **Q: Does this work on WSL?**  
-A: Yes! PortMan detects the platform and uses appropriate commands.
+A: Yes! PortDoom detects the platform and uses appropriate commands.
 
 **Q: Is this safe?**  
-A: PortMan only shows and kills processes you have permission to kill. Admin/sudo may be required for system processes.
+A: PortDoom only shows and kills processes you have permission to kill. Admin/sudo may be required for system processes.
 
 ---
 
@@ -208,7 +208,7 @@ Contributions welcome! Areas we'd love help:
 
 ```bash
 # Fork, clone, and submit a PR
-git clone https://github.com/portman/portman.git
+git clone https://github.com/latiosthinh/portdoom.git
 ```
 
 ---
@@ -226,14 +226,14 @@ git clone https://github.com/portman/portman.git
 
 ## 📄 License
 
-MIT © [PortMan Team](https://github.com/portman/portman)
+MIT © [PortDoom Team](https://github.com/latiosthinh/portdoom)
 
 ---
 
 <div align="center">
 
-**Made with ❤️ for developers everywhere**
+**Made with 💀 for developers who mean business**
 
-[Report Issue](https://github.com/portman/portman/issues) • [Request Feature](https://github.com/portman/portman/issues) • [Discussions](https://github.com/portman/portman/discussions)
+[Report Issue](https://github.com/latiosthinh/portdoom/issues) • [Request Feature](https://github.com/latiosthinh/portdoom/issues) • [Discussions](https://github.com/latiosthinh/portdoom/discussions)
 
 </div>

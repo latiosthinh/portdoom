@@ -1,4 +1,4 @@
-# Getting Started with PortMan Development
+# Getting Started with portdoom Development
 
 ## Prerequisites
 
@@ -8,8 +8,8 @@
 ## Installation
 
 ```bash
-git clone https://github.com/latiosthinh/portman.git
-cd portman
+git clone https://github.com/latiosthinh/portdoom.git
+cd portdoom
 ```
 
 ## Development
@@ -19,7 +19,7 @@ cd portman
 npm link
 
 # Run the CLI
-portman
+portdoom
 
 # Or run directly
 node bin/cli.js
@@ -53,7 +53,7 @@ npm publish --access public
 
 ### Automated Publish (CI/CD)
 
-PortMan uses GitHub Actions to automatically publish to npm when you create a release:
+portdoom uses GitHub Actions to automatically publish to npm when you create a release:
 
 1. **Update version:**
    ```bash
@@ -62,7 +62,7 @@ PortMan uses GitHub Actions to automatically publish to npm when you create a re
    ```
 
 2. **Create a GitHub Release:**
-   - Go to https://github.com/latiosthinh/portman/releases
+   - Go to https://github.com/latiosthinh/portdoom/releases
    - Click "Create a new release"
    - Choose the tag you just pushed
    - Click "Publish release"
@@ -88,7 +88,7 @@ To enable automated publishing:
 ## Project Structure
 
 ```
-portman/
+portdoom/
 ├── bin/
 │   └── cli.js          # Main CLI entry point
 ├── lib/
@@ -117,7 +117,7 @@ portman/
 Process names are cached for 5 seconds to make refresh instant (~22ms).
 
 ### Configuration
-Hidden apps are stored in `~/.portman/config.json`.
+Hidden apps are stored in `~/.portdoom/config.json`.
 
 ## Code Style
 
@@ -137,7 +137,7 @@ Hidden apps are stored in `~/.portman/config.json`.
 
 ```bash
 # Enable verbose output (future feature)
-DEBUG=portman node bin/cli.js
+DEBUG=portdoom node bin/cli.js
 
 # Test specific function
 node -e "const { getListeningPorts } = require('./lib/port-detector'); console.log(getListeningPorts(false));"
@@ -154,8 +154,8 @@ node -e "const { getListeningPorts } = require('./lib/port-detector'); console.l
 - Run as Administrator (Windows) or with sudo (macOS/Linux)
 
 ### Config not saving
-- Check that `~/.portman/` directory exists and is writable
-- On Windows: `C:\Users\YourName\.portman\config.json`
+- Check that `~/.portdoom/` directory exists and is writable
+- On Windows: `C:\Users\YourName\.portdoom\config.json`
 
 ## Release Checklist
 
@@ -169,6 +169,6 @@ node -e "const { getListeningPorts } = require('./lib/port-detector'); console.l
 
 ## Support
 
-- **Issues:** https://github.com/latiosthinh/portman/issues
-- **Discussions:** https://github.com/latiosthinh/portman/discussions
-- **npm:** https://www.npmjs.com/package/portman
+- **Issues:** https://github.com/latiosthinh/portdoom/issues
+- **Discussions:** https://github.com/latiosthinh/portdoom/discussions
+- **npm:** https://www.npmjs.com/package/portdoom

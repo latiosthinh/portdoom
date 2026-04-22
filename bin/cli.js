@@ -45,7 +45,7 @@ function render(ports, sel, showSys, hiddenPids, msg, cmd) {
 
   let out = '\x1b[H\x1b[2J';
 
-  out += `${COLORS.b}${COLORS.c}portman${COLORS.r} ${COLORS.d}v1.0.0${COLORS.r} ${COLORS.k}(${platform})${COLORS.r}\n`;
+  out += `${COLORS.b}${COLORS.c}portdoom${COLORS.r} ${COLORS.d}v1.0.0${COLORS.r} ${COLORS.k}(${platform})${COLORS.r} ${COLORS.R}💀${COLORS.r}\n`;
   out += `${COLORS.d}${'─'.repeat(W)}${COLORS.r}\n`;
 
   if (vis.length === 0) {
